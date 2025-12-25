@@ -2,7 +2,9 @@ import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 
 import User from "../models/User.js";
+import { ENV } from "../lib/env.js";
 import { generateToken } from "../lib/utils.js";
+import { sendWelcomeEmail } from "../email/emailHandlers.js";
 
 export const signup = async (req: Request, res: Response) => {
   const { fullName, email, password } = req.body;
@@ -18,7 +20,7 @@ export const signup = async (req: Request, res: Response) => {
         .json({ message: "Password must be at least 6 characters" });
     }
 
-    // check if emailis valid: regex
+    // check if email is valid: regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Invalid email format" });
@@ -37,8 +39,8 @@ export const signup = async (req: Request, res: Response) => {
     });
 
     if (newUser) {
-      generateToken(newUser._id, res);
-      await newUser.save();
+      const savedUser = await newUser.save();
+      generateToken(savedUser._id, res);
 
       res.status(201).json({
         _id: newUser._id,
@@ -48,6 +50,14 @@ export const signup = async (req: Request, res: Response) => {
       });
 
       // todo:send a welcome email to user
+      const clientURL = ENV.CLIENT_URL;
+      if (!clientURL) throw new Error("CLIENT_URL is not set");
+
+      await sendWelcomeEmail({
+        email: savedUser.email,
+        name: savedUser.fullName,
+        clientURL,
+      });
     } else {
       res.status(400).json({ message: "Invalid user data" });
     }
