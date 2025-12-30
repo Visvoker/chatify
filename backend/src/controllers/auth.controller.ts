@@ -5,7 +5,7 @@ import { ENV } from "../lib/env.js";
 import cloudinary from "../lib/cloudinary.js";
 import { generateToken } from "../lib/utils.js";
 
-import User from "../models/User.js";
+import User from "../models/user.js";
 import { sendWelcomeEmail } from "../email/emailHandlers.js";
 
 export const signup = async (req: Request, res: Response) => {
@@ -84,6 +84,8 @@ export const login = async (req: Request, res: Response) => {
     if (!isPasswordCorrect)
       return res.status(400).json({ message: "Invalid credentials" });
 
+    generateToken(user._id, res);
+
     res.status(200).json({
       _id: user._id,
       fullName: user.fullName,
@@ -103,6 +105,10 @@ export const logout = async (_req: Request, res: Response) => {
 
 export const updateProfile = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const { profilePic } = req.body;
     if (!profilePic)
       return res.status(400).json({ message: "Profile pic is require" });
