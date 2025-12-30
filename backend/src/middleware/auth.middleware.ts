@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 
 import jwt, { JwtPayload } from "jsonwebtoken";
-import User from "../models/User.js";
+import User from "../models/user.js";
 import { ENV } from "../lib/env.js";
 import { AuthUser } from "../type/auth.js";
+import { getErrorMessage } from "../utils/error.js";
 
 type JwtUserPayload = JwtPayload & {
   userId: string;
@@ -45,16 +46,15 @@ export const protectRoute = async (
       .select("-password")
       .lean<AuthUser>();
 
-    req.user = user;
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     req.user = user;
     next();
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.log("Error in protectRoute middleware:", message);
+  } catch (error) {
+    console.log("Error in protectRoute middleware:", getErrorMessage(error));
+
     res.status(500).json({ message: "Internal server error" });
   }
 };
