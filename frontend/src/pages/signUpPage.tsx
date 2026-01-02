@@ -17,7 +17,6 @@ const SignUpPage = () => {
     email: "",
     password: "",
   });
-
   const { signUp, isSigningUp } = useAuthStore();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
