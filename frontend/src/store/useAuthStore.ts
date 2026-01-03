@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import toast from "react-hot-toast";
 
-import type { AuthUser, SignupPayload } from "../types/auth";
+import type { AuthUser, LoginPayload, SignupPayload } from "../types/auth";
 
 import { axiosInstance } from "../lib/axios";
 import { getErrorMessage } from "../utils/error";
@@ -10,14 +10,18 @@ type AuthStore = {
   authUser: AuthUser | null;
   isCheckingAuth: boolean;
   isSigningUp: boolean;
+  isLoggingIn: boolean;
   checkAuth: () => Promise<void>;
   signUp: (data: SignupPayload) => Promise<void>;
+  login: (data: LoginPayload) => Promise<void>;
+  logout: () => Promise<void>;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
   authUser: null,
   isCheckingAuth: true,
   isSigningUp: false,
+  isLoggingIn: false,
 
   checkAuth: async () => {
     try {
@@ -42,6 +46,31 @@ export const useAuthStore = create<AuthStore>((set) => ({
       toast.error(getErrorMessage(error));
     } finally {
       set({ isSigningUp: false });
+    }
+  },
+
+  login: async (data) => {
+    set({ isLoggingIn: true });
+    try {
+      const res = await axiosInstance.post("auth/login", data);
+      set({ authUser: res.data });
+
+      toast.success("Logged in successfully");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      set({ isLoggingIn: false });
+    }
+  },
+
+  logout: async () => {
+    try {
+      await axiosInstance.post("auth/logout");
+      set({ authUser: null });
+      toast.success("Logged out successfully");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error));
+      console.log("Logout error:", error);
     }
   },
 }));
