@@ -1,7 +1,12 @@
 import { create } from "zustand";
 import toast from "react-hot-toast";
 
-import type { AuthUser, LoginPayload, SignupPayload } from "../types/auth";
+import type {
+  AuthUser,
+  LoginPayload,
+  SignupPayload,
+  UpdateProfilePayload,
+} from "../types/auth";
 
 import { axiosInstance } from "../lib/axios";
 import { getErrorMessage } from "../utils/error";
@@ -15,6 +20,7 @@ type AuthStore = {
   signUp: (data: SignupPayload) => Promise<void>;
   login: (data: LoginPayload) => Promise<void>;
   logout: () => Promise<void>;
+  updateProfile: (data: UpdateProfilePayload) => Promise<void>;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -71,6 +77,15 @@ export const useAuthStore = create<AuthStore>((set) => ({
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));
       console.log("Logout error:", error);
+    }
+  },
+  updateProfile: async (data) => {
+    try {
+      const res = await axiosInstance.put("/auth/update-profile", data);
+      set({ authUser: res.data });
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+      console.log("Error in update profile:", error);
     }
   },
 }));
