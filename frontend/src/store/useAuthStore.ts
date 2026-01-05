@@ -21,6 +21,7 @@ type AuthStore = {
   login: (data: LoginPayload) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: UpdateProfilePayload) => Promise<void>;
+  onlineUsers: string[];
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -28,6 +29,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   isCheckingAuth: true,
   isSigningUp: false,
   isLoggingIn: false,
+  onlineUsers: [],
 
   checkAuth: async () => {
     try {

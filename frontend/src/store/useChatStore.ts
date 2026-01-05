@@ -12,8 +12,8 @@ type ChatStore = {
   activeTab: ActiveTab;
   selectedUser: UserDTO | null;
 
-  isUserLoading: boolean;
-  isMessageLoading: boolean;
+  isUsersLoading: boolean;
+  isMessagesLoading: boolean;
   isSoundEnabled: boolean;
 
   toggleSound: () => void;
@@ -41,8 +41,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   messages: [],
   activeTab: "chats",
   selectedUser: null,
-  isUserLoading: false,
-  isMessageLoading: false,
+  isUsersLoading: false,
+  isMessagesLoading: false,
   isSoundEnabled: readSoundEnabled(),
 
   toggleSound: () => {
@@ -59,25 +59,25 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   setSelectedUser: (selectedUser) => set({ selectedUser }),
 
   getAllContacts: async () => {
-    set({ isUserLoading: true });
+    set({ isUsersLoading: true });
     try {
       const res = await axiosInstance.get<UserDTO[]>("/messages/contacts");
       set({ allContacts: res.data });
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));
     } finally {
-      set({ isUserLoading: false });
+      set({ isUsersLoading: false });
     }
   },
   getMyChatPartners: async () => {
-    set({ isMessageLoading: true });
+    set({ isMessagesLoading: true });
     try {
       const res = await axiosInstance.get<UserDTO[]>("/messages/chats");
       set({ chats: res.data });
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));
     } finally {
-      set({ isMessageLoading: false });
+      set({ isMessagesLoading: false });
     }
   },
 }));
