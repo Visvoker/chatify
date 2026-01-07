@@ -81,6 +81,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       console.log("Logout error:", error);
     }
   },
+
   updateProfile: async (data) => {
     try {
       const res = await axiosInstance.put("/auth/update-profile", data);
