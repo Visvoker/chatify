@@ -30,7 +30,7 @@ const App = () => {
           <div className="pointer-events-none absolute top-0 -left-4 z-0 size-96 bg-pink-500 opacity-20 blur-[100px]" />
           <div className="pointer-events-none absolute bottom-0 -right-4 z-0 size-96 bg-cyan-500 opacity-20 blur-[100px]" />
 
-          <div className="relative z-10 w-full">
+          <div className="relative z-10 w-full max-w-6xl mx-auto">
             <Routes>
               <Route
                 path="/"

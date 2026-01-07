@@ -16,8 +16,8 @@ export type MessageDTO = {
   receiverId: MongoId;
   text?: string;
   image?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ActiveTab = "chats" | "contacts";

@@ -7,7 +7,7 @@ import type { UserDTO, MessageDTO, ActiveTab } from "../types/chat";
 
 type ChatStore = {
   allContacts: UserDTO[];
-  chats: UserDTO[]; // 或你後端 /messages/chats 的結構（若是 chat rooms，就改成 ChatDTO[]）
+  chats: UserDTO[]; // 後端 /messages/chats 的結構（若是 chat rooms，就改成 ChatDTO[]）
   messages: MessageDTO[];
   activeTab: ActiveTab;
   selectedUser: UserDTO | null;
@@ -22,6 +22,7 @@ type ChatStore = {
 
   getAllContacts: () => Promise<void>;
   getMyChatPartners: () => Promise<void>;
+  getMessagesByUserId: (userId: string) => Promise<void>;
 };
 
 const readSoundEnabled = () => {
@@ -76,6 +77,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       set({ chats: res.data });
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));
+    } finally {
+      set({ isMessagesLoading: false });
+    }
+  },
+  getMessagesByUserId: async (userId: string) => {
+    set({ isMessagesLoading: true });
+    try {
+      const res = await axiosInstance.get<MessageDTO[]>(`/messages/${userId}`);
+      set({ messages: res.data });
+    } catch (error) {
+      toast.error(getErrorMessage(error) || "Something went wrong");
     } finally {
       set({ isMessagesLoading: false });
     }
