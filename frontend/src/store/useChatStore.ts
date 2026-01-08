@@ -3,7 +3,12 @@ import toast from "react-hot-toast";
 
 import { axiosInstance } from "../lib/axios";
 import { getErrorMessage } from "../utils/error";
-import type { UserDTO, MessageDTO, ActiveTab } from "../types/chat";
+import type {
+  UserDTO,
+  MessageDTO,
+  ActiveTab,
+  SendMessagePayload,
+} from "../types/chat";
 
 type ChatStore = {
   allContacts: UserDTO[];
@@ -23,6 +28,7 @@ type ChatStore = {
   getAllContacts: () => Promise<void>;
   getMyChatPartners: () => Promise<void>;
   getMessagesByUserId: (userId: string) => Promise<void>;
+  sendMessage: (messageData: SendMessagePayload) => Promise<void>;
 };
 
 const readSoundEnabled = () => {
@@ -70,6 +76,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       set({ isUsersLoading: false });
     }
   },
+
   getMyChatPartners: async () => {
     set({ isMessagesLoading: true });
     try {
@@ -81,6 +88,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       set({ isMessagesLoading: false });
     }
   },
+
   getMessagesByUserId: async (userId: string) => {
     set({ isMessagesLoading: true });
     try {
@@ -90,6 +98,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       toast.error(getErrorMessage(error) || "Something went wrong");
     } finally {
       set({ isMessagesLoading: false });
+    }
+  },
+
+  sendMessage: async (messageData: SendMessagePayload) => {
+    const { selectedUser, messages } = get();
+    try {
+      const res = await axiosInstance.post<MessageDTO[]>(
+        `/messages/send/${selectedUser?._id}`,
+        messageData
+      );
+      set({ messages: messages.concat(res.data) });
+    } catch (error) {
+      set({ messages: messages });
+      toast.error(getErrorMessage(error) || "Something went wrong");
     }
   },
 }));

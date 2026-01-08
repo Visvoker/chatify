@@ -21,3 +21,8 @@ export type MessageDTO = {
 };
 
 export type ActiveTab = "chats" | "contacts";
+
+export type SendMessagePayload = {
+  text?: string;
+  image?: string;
+};
