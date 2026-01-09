@@ -16,13 +16,13 @@ export type MessageDTO = {
   receiverId: MongoId;
   text?: string;
   image?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type ActiveTab = "chats" | "contacts";
 
 export type SendMessagePayload = {
   text?: string;
-  image?: string;
+  image?: string | null;
 };

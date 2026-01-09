@@ -9,6 +9,7 @@ import type {
   ActiveTab,
   SendMessagePayload,
 } from "../types/chat";
+import { useAuthStore } from "./useAuthStore";
 
 type ChatStore = {
   allContacts: UserDTO[];
@@ -103,8 +104,29 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   sendMessage: async (messageData: SendMessagePayload) => {
     const { selectedUser, messages } = get();
+    const { authUser } = useAuthStore.getState();
+
+    if (!authUser?._id || !selectedUser?._id) {
+      toast.error("Missing sender or receiver");
+      return;
+    }
+
+    const tempId = `temp-${Date.now()}`;
+
+    const optimisticMessage = {
+      _id: tempId,
+      senderId: authUser?._id,
+      receiverId: selectedUser?._id,
+      text: messageData.text?.trim() || "",
+      image: messageData.image ?? undefined,
+      createdAt: new Date().toISOString(),
+      isOptimistic: true, // flag to identify optimistic messages (optional)
+    };
+    // immidetaly update the ui by adding the message
+    set({ messages: [...messages, optimisticMessage] });
+
     try {
-      const res = await axiosInstance.post<MessageDTO[]>(
+      const res = await axiosInstance.post<MessageDTO>(
         `/messages/send/${selectedUser?._id}`,
         messageData
       );

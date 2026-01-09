@@ -6,7 +6,7 @@ const keyStrokeSounds = [
 ];
 
 function useKeyboardSound() {
-  const playRandomKeystrokeSound = () => {
+  const playRandomKeyStrokeSound = () => {
     const randomSound =
       keyStrokeSounds[Math.floor(Math.random() * keyStrokeSounds.length)];
 
@@ -16,7 +16,7 @@ function useKeyboardSound() {
       .catch((error) => console.log("Audio play failed:", error));
   };
 
-  return { playRandomKeystrokeSound };
+  return { playRandomKeyStrokeSound };
 }
 
 export default useKeyboardSound;
