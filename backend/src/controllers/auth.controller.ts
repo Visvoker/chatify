@@ -51,7 +51,6 @@ export const signup = async (req: Request, res: Response) => {
         profilePic: newUser.profilePic,
       });
 
-      // todo:send a welcome email to user
       const clientURL = ENV.CLIENT_URL;
       if (!clientURL) throw new Error("CLIENT_URL is not set");
 

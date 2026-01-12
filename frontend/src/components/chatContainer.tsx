@@ -9,16 +9,33 @@ import NoChatHistoryPlaceholder from "./noChatHistoryPlaceholder";
 import MessagesLoadingSkeleton from "./messagesLoadingSkeleton";
 
 function ChatContainer() {
-  const { selectedUser, getMessagesByUserId, messages, isMessagesLoading } =
-    useChatStore();
+  const {
+    selectedUser,
+    getMessagesByUserId,
+    messages,
+    isMessagesLoading,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (!selectedUser?._id) return;
+  const selectedUserId = selectedUser?._id;
 
-    getMessagesByUserId(selectedUser._id);
-  }, [selectedUser?._id, getMessagesByUserId]);
+  useEffect(() => {
+    if (!selectedUserId) return;
+
+    getMessagesByUserId(selectedUserId);
+    subscribeToMessages();
+
+    // clean up
+    return unsubscribeFromMessages;
+  }, [
+    selectedUserId,
+    getMessagesByUserId,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  ]);
 
   useEffect(() => {
     if (messageEndRef.current) {
