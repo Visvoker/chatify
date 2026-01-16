@@ -8,6 +8,7 @@ import type {
   MessageDTO,
   ActiveTab,
   SendMessagePayload,
+  ChatPartnerDTO,
 } from "../types/chat";
 import { useAuthStore } from "./useAuthStore";
 
@@ -83,7 +84,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   getMyChatPartners: async () => {
     set({ isMessagesLoading: true });
     try {
-      const res = await axiosInstance.get<UserDTO[]>("/messages/chats");
+      const res = await axiosInstance.get<ChatPartnerDTO[]>("/messages/chats");
       set({ chats: res.data });
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));

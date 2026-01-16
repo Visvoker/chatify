@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Request, Response } from "express";
 
 import User from "../models/user.js";
@@ -39,7 +40,7 @@ export const getMessagesByUserId = async (req: Request, res: Response) => {
         { senderId: myId, receiverId: userToChatId },
         { senderId: userToChatId, receiverId: myId },
       ],
-    });
+    }).sort({ createdAt: 1 });
 
     res.status(200).json(messages);
   } catch (error) {
@@ -104,29 +105,65 @@ export const getChatPartners = async (req: Request, res: Response) => {
   try {
     const loggedInUserId = req.user?._id;
 
-    // find all the messages where the logged-in user is either sender or receiver
-    const messages = await Message.find({
-      $or: [{ senderId: loggedInUserId }, { receiverId: loggedInUserId }],
-    });
+    if (!loggedInUserId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-    const chatPartnerIds = [
-      ...new Set(
-        messages.map((msg) =>
-          msg.senderId.toString() === loggedInUserId?.toString()
-            ? msg.receiverId.toString()
-            : msg.senderId.toString()
-        )
-      ),
-    ];
+    const myId = new mongoose.Types.ObjectId(String(loggedInUserId));
 
-    const chatPartners = await User.find({
-      _id: { $in: chatPartnerIds },
-    }).select("-password");
+    const chats = await Message.aggregate([
+      {
+        $match: {
+          $or: [{ senderId: myId }, { receiverId: myId }],
+        },
+      },
+      { $sort: { createdAt: -1 } },
+      {
+        $addFields: {
+          partnerId: {
+            $cond: [{ $eq: ["$senderId", myId] }, "$receiverId", "$senderId"],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$partnerId",
+          lastMessageAt: { $first: "$createdAt" },
+          lastMessageText: { $first: "$text" },
+          lastMessageImage: { $first: "$image" },
+          lastMessageSenderId: { $first: "$senderId" },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $project: {
+          _id: "$user._id",
+          email: "$user.email",
+          fullName: "$user.fullName",
+          profilePic: "$user.profilePic",
+          createdAt: "$user.createdAt",
+          updatedAt: "$user.updatedAt",
 
-    res.status(200).json(chatPartners);
+          lastMessageAt: 1,
+          lastMessageText: 1,
+          lastMessageImage: 1,
+          lastMessageSenderId: 1,
+        },
+      },
+      { $sort: { lastMessageAt: -1 } },
+    ]);
+
+    res.status(200).json(chats);
   } catch (error) {
-    console.log("Error in sendMessage controller:", getErrorMessage(error));
-
-    res.status(500).json({ error: "Internal server error" });
+    console.log("Error in getChatPartners controller:", getErrorMessage(error));
+    return res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -10,6 +10,13 @@ export type UserDTO = {
   updatedAt?: string;
 };
 
+export type ChatPartnerDTO = UserDTO & {
+  lastMessageAt: string;
+  lastMessageText?: string;
+  lastMessageImage?: string;
+  lastMessageSenderId?: string;
+};
+
 export type MessageDTO = {
   _id: MongoId;
   senderId: MongoId;
